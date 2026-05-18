@@ -20,29 +20,73 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const spotsLeft = details.max_participants - details.participants.length;
 
-        const participantsList = details.participants.length > 0
-          ? details.participants.map(p => `<li><span>${p}</span><button class="delete-participant" data-activity="${name}" data-email="${p}" title="Remove participant">✕</button></li>`).join('')
-          : '<li><em>No participants yet</em></li>';
+        const title = document.createElement("h4");
+        title.textContent = name;
+        activityCard.appendChild(title);
 
-        activityCard.innerHTML = `
-          <h4>${name}</h4>
-          <p>${details.description}</p>
-          <p><strong>Schedule:</strong> ${details.schedule}</p>
-          <p><strong>Availability:</strong> ${spotsLeft} spots left</p>
-          <div class="participants-section">
-            <strong>Participants:</strong>
-            <ul class="participants-list">
-              ${participantsList}
-            </ul>
-          </div>
-        `;
+        const description = document.createElement("p");
+        description.textContent = details.description;
+        activityCard.appendChild(description);
+
+        const schedule = document.createElement("p");
+        const scheduleLabel = document.createElement("strong");
+        scheduleLabel.textContent = "Schedule:";
+        schedule.appendChild(scheduleLabel);
+        schedule.appendChild(document.createTextNode(` ${details.schedule}`));
+        activityCard.appendChild(schedule);
+
+        const availability = document.createElement("p");
+        const availabilityLabel = document.createElement("strong");
+        availabilityLabel.textContent = "Availability:";
+        availability.appendChild(availabilityLabel);
+        availability.appendChild(document.createTextNode(` ${spotsLeft} spots left`));
+        activityCard.appendChild(availability);
+
+        const participantsSection = document.createElement("div");
+        participantsSection.className = "participants-section";
+
+        const participantsLabel = document.createElement("strong");
+        participantsLabel.textContent = "Participants:";
+        participantsSection.appendChild(participantsLabel);
+
+        const participantsList = document.createElement("ul");
+        participantsList.className = "participants-list";
+
+        if (details.participants.length > 0) {
+          details.participants.forEach((p) => {
+            const participantItem = document.createElement("li");
+
+            const participantEmail = document.createElement("span");
+            participantEmail.textContent = p;
+            participantItem.appendChild(participantEmail);
+
+            const deleteButton = document.createElement("button");
+            deleteButton.className = "delete-participant";
+            deleteButton.dataset.activity = name;
+            deleteButton.dataset.email = p;
+            deleteButton.title = "Remove participant";
+            deleteButton.textContent = "✕";
+            participantItem.appendChild(deleteButton);
+
+            participantsList.appendChild(participantItem);
+          });
+        } else {
+          const participantItem = document.createElement("li");
+          const emptyState = document.createElement("em");
+          emptyState.textContent = "No participants yet";
+          participantItem.appendChild(emptyState);
+          participantsList.appendChild(participantItem);
+        }
+
+        participantsSection.appendChild(participantsList);
+        activityCard.appendChild(participantsSection);
 
         // Add delete event listeners for participants
         activityCard.querySelectorAll('.delete-participant').forEach(btn => {
           btn.addEventListener('click', async (event) => {
             event.preventDefault();
-            const activity = btn.getAttribute('data-activity');
-            const email = btn.getAttribute('data-email');
+            const activity = btn.dataset.activity;
+            const email = btn.dataset.email;
 
             if (confirm(`Remove ${email} from ${activity}?`)) {
               try {
